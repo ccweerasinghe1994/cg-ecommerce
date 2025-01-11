@@ -1,0 +1,17 @@
+services:
+  mysql:
+    image: mysql:9.0.1
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: cgecommercepassword
+      MYSQL_DATABASE: cgecommercedb
+      MYSQL_USER: cgecommerceuser
+      MYSQL_PASSWORD: cgecommercepassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data_cgecommerce:/var/lib/mysql
+
+volumes:
+  mysql_data_cgecommerce:
