@@ -2,6 +2,7 @@ package com.cgnexus.ecommerce.controllers;
 
 import com.cgnexus.ecommerce.model.Category;
 import com.cgnexus.ecommerce.service.CategoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class CategoryController {
     }
 
     @PostMapping("/public/categories")
-    public ResponseEntity<String> addCategory(@RequestBody Category category) {
+    public ResponseEntity<String> addCategory(@RequestBody @Valid Category category) {
         categoryService.createCategory(category);
         return ResponseEntity.status(HttpStatus.CREATED).body("category added successfully");
     }
