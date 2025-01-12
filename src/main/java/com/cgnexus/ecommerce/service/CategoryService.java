@@ -1,16 +1,18 @@
 package com.cgnexus.ecommerce.service;
 
-import com.cgnexus.ecommerce.model.Category;
+import com.cgnexus.ecommerce.payload.ApiResponse;
+import com.cgnexus.ecommerce.payload.CategoryDto;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 public interface CategoryService {
 
-    List<Category> getAllCategories();
-    void createCategory(Category category);
+    ApiResponse<List<CategoryDto>> getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortDirection);
 
-    String deleteCategory(Long categoryId) throws ResponseStatusException;
+    ApiResponse<CategoryDto> createCategory(CategoryDto category);
 
-    String updateCategory(Long categoryId, Category category);
+    ApiResponse<String> deleteCategory(Long categoryId) throws ResponseStatusException;
+
+    ApiResponse<CategoryDto> updateCategory(Long categoryId, CategoryDto categoryDto);
 }
