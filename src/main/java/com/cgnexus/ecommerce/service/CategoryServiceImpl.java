@@ -4,7 +4,7 @@ import com.cgnexus.ecommerce.exception.ApiException;
 import com.cgnexus.ecommerce.exception.ResourceNotFoundException;
 import com.cgnexus.ecommerce.model.Category;
 import com.cgnexus.ecommerce.payload.ApiResponse;
-import com.cgnexus.ecommerce.payload.CategoryDto;
+import com.cgnexus.ecommerce.payload.CategoryDTO;
 import com.cgnexus.ecommerce.repositories.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -27,7 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
-    public ApiResponse<List<CategoryDto>> getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortDirection) {
+    public ApiResponse<List<CategoryDTO>> getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortDirection) {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Category> categoryPages = categoryRepository.findAll(pageable);
@@ -37,10 +37,10 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ApiException("No categories found", HttpStatus.NO_CONTENT);
         }
 
-        List<CategoryDto> list = all.stream().map(category -> modelMapper.map(category, CategoryDto.class)).toList();
+        List<CategoryDTO> list = all.stream().map(category -> modelMapper.map(category, CategoryDTO.class)).toList();
 
         return ApiResponse
-                .<List<CategoryDto>>builder()
+                .<List<CategoryDTO>>builder()
                 .content(list)
                 .lastPage(categoryPages.isLast())
                 .pageNumber(categoryPages.getNumber())
@@ -52,7 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
-    public ApiResponse<CategoryDto> createCategory(CategoryDto categoryDto) {
+    public ApiResponse<CategoryDTO> createCategory(CategoryDTO categoryDto) {
 
         List<Category> byCategoryName = categoryRepository.findByCategoryName(categoryDto.getCategoryName());
 
@@ -63,8 +63,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = modelMapper.map(categoryDto, Category.class);
         Category saved = categoryRepository.save(category);
 
-        return ApiResponse.<CategoryDto>builder()
-                .content(modelMapper.map(saved, CategoryDto.class))
+        return ApiResponse.<CategoryDTO>builder()
+                .content(modelMapper.map(saved, CategoryDTO.class))
                 .build();
     }
 
@@ -86,7 +86,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public ApiResponse<CategoryDto> updateCategory(Long categoryId, CategoryDto categoryDto) throws ResponseStatusException {
+    public ApiResponse<CategoryDTO> updateCategory(Long categoryId, CategoryDTO categoryDto) throws ResponseStatusException {
         Category categoryToUpdate = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
 
@@ -96,8 +96,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category saved = categoryRepository.save(categoryToUpdate);
 
-        return ApiResponse.<CategoryDto>builder()
-                .content(modelMapper.map(saved, CategoryDto.class))
+        return ApiResponse.<CategoryDTO>builder()
+                .content(modelMapper.map(saved, CategoryDTO.class))
                 .build();
     }
 }
