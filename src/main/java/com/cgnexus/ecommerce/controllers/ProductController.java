@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.cgnexus.ecommerce.config.AppConstants.*;
@@ -82,6 +84,13 @@ public class ProductController {
         ApiResponse<String> response = ApiResponse.<String>builder()
                 .content("Product deleted successfully")
                 .build();
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/admin/products/{productId}/image")
+    public ResponseEntity<ApiResponse<ProductDTO>> updateProductImage(@PathVariable Long productId, @RequestParam MultipartFile image) throws IOException {
+        ProductDTO productDTO = productService.updateProductImage(productId, image);
+        ApiResponse<ProductDTO> response = ApiResponse.<ProductDTO>builder().content(productDTO).build();
         return ResponseEntity.ok(response);
     }
 }

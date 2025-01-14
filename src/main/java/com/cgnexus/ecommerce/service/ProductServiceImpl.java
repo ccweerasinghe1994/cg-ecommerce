@@ -15,7 +15,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @Service
@@ -121,6 +127,39 @@ public class ProductServiceImpl implements ProductService {
                 .findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
         productRepository.delete(product);
+    }
+
+    @Override
+    public ProductDTO updateProductImage(Long productId, MultipartFile image) throws IOException {
+
+        Product product = productRepository
+                .findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("product", "producId", productId));
+        String path = "images/";
+        String fileName = uploadImage(path, image);
+        product.setImage(fileName);
+        Product saved = productRepository.save(product);
+        return mapper.map(saved, ProductDTO.class);
+    }
+
+    private String uploadImage(String path, MultipartFile image) throws IOException {
+        String originalFilename = image.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new IllegalArgumentException("File name cannot be null");
+        }
+
+        // Generate unique filename to avoid conflicts
+        String filename = System.currentTimeMillis() + "-" + originalFilename.replaceAll("\\s+", "_");
+        Path filePath = Paths.get(path + filename);
+
+        // Create directories if they don't exist
+        Files.createDirectories(filePath.getParent());
+
+        // Copy file to destination
+        Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        return filename;
+                                        
     }
 
     private ApiResponse<List<ProductDTO>> getListApiResponse(Page<Product> byCategoryProductsPage) {
