@@ -12,6 +12,8 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.validation.ConstraintViolationException;
+
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -132,6 +134,29 @@ public class GlobalExceptionHandler {
                 .path(((ServletWebRequest) request).getRequest().getRequestURI())
                 .message("%s Required request parameter is missing".formatted(ex.getParameterName()))
                 .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    // ConstraintViolationException
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
+        log.error("Validation error occurred: ", ex);
+        
+        Map<String, String> validationErrors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            validationErrors.put(violation.getPropertyPath().toString(), violation.getMessage());
+        });
+        
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Error")
+                .message("Constraint validation failed")
+                .path(((ServletWebRequest) request).getRequest().getRequestURI())
+                .validationErrors(validationErrors)
+                .build();
+                
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }

@@ -1,5 +1,6 @@
 package com.cgnexus.ecommerce.service;
 
+import com.cgnexus.ecommerce.exception.ApiException;
 import com.cgnexus.ecommerce.exception.ResourceNotFoundException;
 import com.cgnexus.ecommerce.model.Category;
 import com.cgnexus.ecommerce.model.Product;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,11 +36,18 @@ public class ProductServiceImpl implements ProductService {
     private String filePath;
 
     @Override
-    public ProductDTO addPost(ProductDTO productDTO, Long categoryId) {
+    public ProductDTO addProduct(ProductDTO productDTO, Long categoryId) {
 
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new ResourceNotFoundException("category", "categoryId", categoryId)
         );
+
+        category.getProducts().stream()
+                .filter(product -> product.getProductName().equals(productDTO.getProductName()))
+                .findAny()
+                .ifPresent(product -> {
+                    throw new ApiException("Product with name %s already exists".formatted(productDTO.getProductName()), HttpStatus.CONFLICT);
+                });
 
         Product product = mapper.map(productDTO, Product.class);
 
@@ -57,6 +66,11 @@ public class ProductServiceImpl implements ProductService {
         Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
         Page<Product> products = productRepository.findAll(pageable);
+
+        if (products.isEmpty()) {
+            throw new ApiException("No Products found", HttpStatus.NO_CONTENT);
+        }
+
         return getListApiResponse(products);
 
     }
@@ -77,6 +91,10 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("category", "categoryId", categoryId));
 
         Page<Product> byCategoryProductsPage = productRepository.findByCategory(category, pageable);
+
+        if (byCategoryProductsPage.isEmpty()) {
+            throw new ApiException("No Products found", HttpStatus.NO_CONTENT);
+        }
         return getListApiResponse(byCategoryProductsPage);
     }
 
@@ -86,6 +104,11 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
 
         Page<Product> byProductNameIsLikeIgnoreCase = productRepository.findByProductNameContainingIgnoreCase(keyword, pageable);
+
+        if (byProductNameIsLikeIgnoreCase.isEmpty()) {
+            throw new ApiException("No Products found", HttpStatus.NO_CONTENT);
+        }
+
         return getListApiResponse(byProductNameIsLikeIgnoreCase);
     }
 

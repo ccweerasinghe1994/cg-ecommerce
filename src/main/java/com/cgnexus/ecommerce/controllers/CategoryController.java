@@ -23,7 +23,7 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<List<CategoryDTO>>> getAllCategories(
             @RequestParam(name = "pageSize", defaultValue = DEFAULT_PAGE_SIZE) Integer pageSize,
             @RequestParam(name = "pageNumber", defaultValue = DEFAULT_PAGE_NUMBER) Integer pageNumber,
-            @RequestParam(name = "sortBy", defaultValue = DEFAULT_SORT_BY) String sortBy,
+            @RequestParam(name = "sortBy", defaultValue = DEFAULT_SORT_CATEGORIES_BY) String sortBy,
             @RequestParam(name = "sortDirection", defaultValue = DEFAULT_SORT_DIRECTION) String sortDirection
     ) {
         ApiResponse<List<CategoryDTO>> allCategories = categoryService.getAllCategories(pageNumber, pageSize, sortBy, sortDirection);

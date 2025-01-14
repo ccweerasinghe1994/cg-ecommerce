@@ -3,6 +3,7 @@ package com.cgnexus.ecommerce.controllers;
 import com.cgnexus.ecommerce.payload.ApiResponse;
 import com.cgnexus.ecommerce.payload.ProductDTO;
 import com.cgnexus.ecommerce.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +22,9 @@ public class ProductController {
 
     @PostMapping("/admin/categories/{categoryId}/product")
     public ResponseEntity<ApiResponse<ProductDTO>> addProduct(
-            @RequestBody ProductDTO productDTO,
+            @Valid @RequestBody ProductDTO productDTO,
             @PathVariable(name = "categoryId") Long categoryId) {
-        ProductDTO response = productService.addPost(productDTO, categoryId);
+        ProductDTO response = productService.addProduct(productDTO, categoryId);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -47,7 +48,7 @@ public class ProductController {
             @RequestParam(name = "pageNumber", defaultValue = DEFAULT_PAGE_NUMBER) Integer pageNumber,
             @RequestParam(name = "pageSize", defaultValue = DEFAULT_PAGE_SIZE) Integer pageSize,
             @RequestParam(name = "sortDirection", defaultValue = DEFAULT_SORT_DIRECTION) String sortDirection,
-            @RequestParam(name = "sortBy", defaultValue = DEFAULT_PRODUCT_SORT_BY) String sortBy,
+            @RequestParam(name = "sortBy", defaultValue = DEFAULT_SORT_PRODUCT_BY) String sortBy,
             @PathVariable(name = "categoryId") Long categoryId
 
     ) {
@@ -60,7 +61,7 @@ public class ProductController {
             @RequestParam(name = "pageNumber", defaultValue = DEFAULT_PAGE_NUMBER) Integer pageNumber,
             @RequestParam(name = "pageSize", defaultValue = DEFAULT_PAGE_SIZE) Integer pageSize,
             @RequestParam(name = "sortDirection", defaultValue = DEFAULT_SORT_DIRECTION) String sortDirection,
-            @RequestParam(name = "sortBy", defaultValue = DEFAULT_PRODUCT_SORT_BY) String sortBy,
+            @RequestParam(name = "sortBy", defaultValue = DEFAULT_SORT_PRODUCT_BY) String sortBy,
             @PathVariable(name = "keyword") String keyword
     ) {
         ApiResponse<List<ProductDTO>> response = productService.getAllProductsByKeyWord(pageNumber, pageSize, sortDirection, sortBy, keyword);
@@ -68,7 +69,7 @@ public class ProductController {
     }
 
     @PutMapping("/admin/products/{productId}")
-    public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable Long productId, @Valid @RequestBody ProductDTO productDTO) {
 
         ProductDTO result = productService.updateProduct(productDTO, productId);
 
