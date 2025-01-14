@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -81,6 +82,39 @@ public class ProductServiceImpl implements ProductService {
         return getListApiResponse(byProductNameIsLikeIgnoreCase);
     }
 
+    @Override
+    @Transactional
+    public ProductDTO updateProduct(ProductDTO productDTO, Long productId) {
+
+        Product existingProduct = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+
+        validateProductInput(productDTO);
+
+        // Calculate special price
+        if (productDTO.getPrice() != null || productDTO.getDiscount() != null) {
+            double newPrice = productDTO.getPrice() != null ? productDTO.getPrice() : existingProduct.getPrice();
+            double newDiscount = productDTO.getDiscount() != null ? productDTO.getDiscount() : existingProduct.getDiscount();
+            double specialPrice = calculateSpecialPrice(newPrice, newDiscount);
+            existingProduct.setSpecialPrice(specialPrice);
+        }
+
+        if (productDTO.getProductName() != null && !productDTO.getProductName().isBlank()) {
+            existingProduct.setProductName(productDTO.getProductName());
+        }
+        if (productDTO.getDescription() != null && !productDTO.getDescription().isBlank()) {
+            existingProduct.setDescription(productDTO.getDescription());
+        }
+
+        if (productDTO.getQuantity() != null) existingProduct.setQuantity(productDTO.getQuantity());
+        if (productDTO.getPrice() != null) existingProduct.setPrice(productDTO.getPrice());
+        if (productDTO.getDiscount() != null) existingProduct.setDiscount(productDTO.getDiscount());
+
+
+        Product save = productRepository.save(existingProduct);
+
+        return mapper.map(save, ProductDTO.class);
+    }
+
     private ApiResponse<List<ProductDTO>> getListApiResponse(Page<Product> byCategoryProductsPage) {
         List<Product> productList = byCategoryProductsPage.getContent();
         List<ProductDTO> productDTOList = productList.stream().map(product -> mapper.map(product, ProductDTO.class)).toList();
@@ -92,5 +126,22 @@ public class ProductServiceImpl implements ProductService {
                 .totalElements(byCategoryProductsPage.getTotalElements())
                 .pageSize(byCategoryProductsPage.getSize())
                 .build();
+    }
+
+    private void validateProductInput(ProductDTO productDTO) {
+        if (productDTO.getPrice() != null && productDTO.getPrice() <= 0) {
+            throw new IllegalArgumentException("Price must be greater than 0");
+        }
+        if (productDTO.getDiscount() != null && (productDTO.getDiscount() < 0 || productDTO.getDiscount() > 100)) {
+            throw new IllegalArgumentException("Discount must be between 0 and 100");
+        }
+        if (productDTO.getQuantity() != null && productDTO.getQuantity() < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative");
+        }
+    }
+
+    private double calculateSpecialPrice(double price, double discount) {
+        double discountAmount = price * (discount / 100.0);
+        return Math.round((price - discountAmount) * 100.0) / 100.0;
     }
 }

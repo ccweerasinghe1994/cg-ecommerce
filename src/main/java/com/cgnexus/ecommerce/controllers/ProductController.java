@@ -64,4 +64,15 @@ public class ProductController {
         ApiResponse<List<ProductDTO>> response = productService.getAllProductsByKeyWord(pageNumber, pageSize, sortDirection, sortBy, keyword);
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/admin/products/{productId}")
+    public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO productDTO) {
+
+        ProductDTO result = productService.updateProduct(productDTO, productId);
+
+        ApiResponse<ProductDTO> response = ApiResponse.<ProductDTO>builder()
+                .content(result)
+                .build();
+        return ResponseEntity.ok(response);
+    }
 }
