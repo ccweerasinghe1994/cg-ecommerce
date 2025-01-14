@@ -9,6 +9,7 @@ import com.cgnexus.ecommerce.repositories.CategoryRepository;
 import com.cgnexus.ecommerce.repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,10 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @Service
@@ -31,6 +28,10 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ModelMapper mapper;
+    private final FileService fileService;
+
+    @Value("${project.image.upload.dir:images/}")
+    private String filePath;
 
     @Override
     public ProductDTO addPost(ProductDTO productDTO, Long categoryId) {
@@ -135,32 +136,13 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository
                 .findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("product", "producId", productId));
-        String path = "images/";
-        String fileName = uploadImage(path, image);
+
+        String fileName = fileService.uploadImage(filePath, image);
         product.setImage(fileName);
         Product saved = productRepository.save(product);
         return mapper.map(saved, ProductDTO.class);
     }
 
-    private String uploadImage(String path, MultipartFile image) throws IOException {
-        String originalFilename = image.getOriginalFilename();
-        if (originalFilename == null) {
-            throw new IllegalArgumentException("File name cannot be null");
-        }
-
-        // Generate unique filename to avoid conflicts
-        String filename = System.currentTimeMillis() + "-" + originalFilename.replaceAll("\\s+", "_");
-        Path filePath = Paths.get(path + filename);
-
-        // Create directories if they don't exist
-        Files.createDirectories(filePath.getParent());
-
-        // Copy file to destination
-        Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        return filename;
-                                        
-    }
 
     private ApiResponse<List<ProductDTO>> getListApiResponse(Page<Product> byCategoryProductsPage) {
         List<Product> productList = byCategoryProductsPage.getContent();
