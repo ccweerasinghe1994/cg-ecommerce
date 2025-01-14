@@ -18,4 +18,6 @@ public interface ProductService {
     ApiResponse<List<ProductDTO>> getAllProductsByKeyWord(Integer pageNumber, Integer pageSize, String sortDirection, String sortBy, String keyword);
 
     ProductDTO updateProduct(ProductDTO productDTO, Long productId);
+
+    void deleteProduct(Long productId);
 }

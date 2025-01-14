@@ -115,6 +115,14 @@ public class ProductServiceImpl implements ProductService {
         return mapper.map(save, ProductDTO.class);
     }
 
+    @Override
+    public void deleteProduct(Long productId) {
+        Product product = productRepository
+                .findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+        productRepository.delete(product);
+    }
+
     private ApiResponse<List<ProductDTO>> getListApiResponse(Page<Product> byCategoryProductsPage) {
         List<Product> productList = byCategoryProductsPage.getContent();
         List<ProductDTO> productDTOList = productList.stream().map(product -> mapper.map(product, ProductDTO.class)).toList();

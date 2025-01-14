@@ -75,4 +75,13 @@ public class ProductController {
                 .build();
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/admin/products/{productId}")
+    public ResponseEntity<ApiResponse<String>> deleteProduct(@PathVariable Long productId) {
+        productService.deleteProduct(productId);
+        ApiResponse<String> response = ApiResponse.<String>builder()
+                .content("Product deleted successfully")
+                .build();
+        return ResponseEntity.ok(response);
+    }
 }
