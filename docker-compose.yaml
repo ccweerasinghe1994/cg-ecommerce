@@ -3,8 +3,8 @@ services:
     container_name: cg-ecommerce
     build:
       context: .
-    ports:
-      - "8080:8080"
+    #    ports:
+    #      - "8080:8080"
     environment:
       - DATASOURCE_URL=jdbc:mysql://mysql:3306/cgecommercedb
       - DATASOURCE_USERNAME=${MYSQL_USER}
