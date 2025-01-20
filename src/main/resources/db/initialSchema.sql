@@ -121,3 +121,18 @@ VALUES ('The new iPhone 12 Pro Max with 256GB of storage', 1099.99, 'iPhone 12 P
         'https://www.sony.com/image/1b3b1f3b7b7', 0.25),
        ('The new Fujifilm X-T4 Mirrorless Camera', 1699.99, 'Fujifilm X-T4', 100, 1299.99, 18,
         'https://www.fujifilm.com/products', 0.25);
+
+
+create table users
+(
+    username varchar(50)  not null primary key,
+    password varchar(500) not null,
+    enabled  boolean      not null
+);
+create table authorities
+(
+    username  varchar(50) not null,
+    authority varchar(50) not null,
+    constraint fk_authorities_users foreign key (username) references users (username)
+);
+create unique index ix_auth_username on authorities (username, authority);

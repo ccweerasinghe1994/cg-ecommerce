@@ -1,0 +1,46 @@
+services:
+  server:
+    container_name: cg-ecommerce
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DATASOURCE_URL=jdbc:mysql://mysql:3306/cgecommercedb
+      - DATASOURCE_USERNAME=${MYSQL_USER}
+      - DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cg-ecommerce-http.rule=Host(`api.cg-ecommerce.ccweerasinghe.me`)"
+      - "traefik.http.routers.cg-ecommerce-http.entrypoints=web"
+      - "traefik.http.routers.cg-ecommerce-http.middlewares=jenkins-https-redirect"
+      # HTTPS configuration
+      - "traefik.http.routers.cg-ecommerce-https.rule=Host(`api.cg-ecommerce.ccweerasinghe.me`)"
+      - "traefik.http.routers.cg-ecommerce-https.entrypoints=websecure"
+      - "traefik.http.routers.cg-ecommerce-https.tls=true"
+      - "traefik.http.routers.cg-ecommerce-https.tls.certresolver=cloudflare"
+    depends_on:
+      mysql:
+        condition: service_healthy
+  mysql:
+    image: mysql:9.0.1
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    #    ports:
+    #      - "3306:3306"
+    volumes:
+      - mysql_data_cgecommerce:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+volumes:
+  mysql_data_cgecommerce:

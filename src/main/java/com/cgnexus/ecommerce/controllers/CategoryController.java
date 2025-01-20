@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class CategoryController {
     }
 
     @PostMapping("/admin/categories")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<CategoryDTO>> addCategory(@RequestBody @Valid CategoryDTO categoryDto) {
         ApiResponse<CategoryDTO> response = categoryService.createCategory(categoryDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -47,4 +49,6 @@ public class CategoryController {
         ApiResponse<CategoryDTO> categoryDtoApiResponse = categoryService.updateCategory(categoryId, categoryDto);
         return ResponseEntity.ok(categoryDtoApiResponse);
     }
+
+
 }
